@@ -1,42 +1,48 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'myapp:latest'
+    }
+
     stages {
-        stage('Clone') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/shaikafren/jenkins-pipeline-demo.git'
+                git 'https://github.com/shaikafren/jenkins-pipeline-demo.git'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo "📦 Building the application..."'
+                script {
+                    sh "sudo docker build -t ${DOCKER_IMAGE} ."
+                }
             }
         }
 
-        stage('Test') {
+        stage('Run Docker Container') {
             steps {
-                sh 'echo "🧪 Running tests..."'
+                script {
+                    // Stop & remove previous container if exists
+                    sh '''
+                    if [ $(sudo docker ps -aq -f name=myapp-container) ]; then
+                        sudo docker stop myapp-container
+                        sudo docker rm myapp-container
+                    fi
+                    '''
+                    // Run new container
+                    sh "sudo docker run -d --name myapp-container -p 3000:3000 ${DOCKER_IMAGE}"
+                }
             }
         }
+    }
 
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t myapp:latest .'
-            }
+    post {
+        success {
+            echo '✅ Deployment successful! Access the app at http://<EC2_PUBLIC_IP>:3000'
         }
-
-        stage('Docker Run') {
-            steps {
-                // Map host port 8080 to container port 3000 (matches your Dockerfile)
-                sh 'docker run -d -p 8080:3000 --name myapp-container myapp:latest || docker restart myapp-container'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'echo "🚀 Application deployed!"'
-            }
+        failure {
+            echo '❌ Deployment failed!'
         }
     }
 }
