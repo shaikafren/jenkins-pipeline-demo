@@ -1,1 +1,2 @@
-echo "console.log('Hello from Docker!');" > index.js
+console.log('Hello from Docker!');
+
