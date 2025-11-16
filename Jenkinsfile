@@ -22,19 +22,19 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'echo "🐳 Building Docker image..."'
                 sh 'docker build -t myapp:latest .'
+            }
+        }
+
+        stage('Docker Run') {
+            steps {
+                sh 'docker run -d -p 3000:3000 --name myapp_container myapp:latest'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'echo "🚀 Deploying application..."'
-                // Stop any existing container
-                sh 'docker stop myappcontainer || true'
-                sh 'docker rm myappcontainer || true'
-                // Run the container
-                sh 'docker run -d -p 3000:3000 --name myappcontainer myapp:latest'
+                sh 'echo "🚀 Deployment complete!"'
             }
         }
     }
