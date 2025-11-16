@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/shaikafren/jenkins-pipeline-demo.git'
+                git branch: 'main', url: 'https://github.com/shaikafren/jenkins-pipeline-demo.git'
             }
         }
 
@@ -27,3 +27,4 @@ pipeline {
         }
     }
 }
+
